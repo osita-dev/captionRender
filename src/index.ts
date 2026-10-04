@@ -10,11 +10,16 @@ import type { Job, RenderRequest } from './types';
 const app = new Hono();
 
 // CORS
-app.use('/*', cors({
-  origin: 
-    'https://captionrenderr.vercel.app',
-  
-}));
+app.use(
+  '*',
+  cors({
+    origin: 'https://captionrenderr.vercel.app',
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    exposeHeaders: ['Content-Length'],
+    maxAge: 600,
+  })
+)
 
 const UPLOAD_DIR = './uploads';
 const OUTPUT_DIR = './outputs';
@@ -30,8 +35,8 @@ const jobs = new Map<string, Job>();
 // Auto-delete local files after 1 hour
 function scheduleCleanup(jobId: string, inputPath: string, outputPath?: string) {
   setTimeout(async () => {
-    await Bun.file(inputPath).unlink().catch(() => {});
-    if (outputPath) await Bun.file(outputPath).unlink().catch(() => {});
+    await Bun.file(inputPath).unlink().catch(() => { });
+    if (outputPath) await Bun.file(outputPath).unlink().catch(() => { });
     console.log(`🧹 Cleaned up files for job ${jobId}`);
   }, 60 * 60 * 1000); // 1 hour
 }
@@ -71,7 +76,7 @@ app.post('/api/compress', async (c) => {
     const exitCode = await proc.exited;
 
     // Clean up input file
-    await Bun.file(inputPath).unlink().catch(() => {});
+    await Bun.file(inputPath).unlink().catch(() => { });
 
     if (exitCode !== 0) {
       return c.json({ error: 'Compression failed' }, 500);
@@ -97,7 +102,7 @@ app.post('/api/compress', async (c) => {
 // ─── UPLOAD ENDPOINT ───
 app.post('/api/upload', async (c) => {
   console.log('📥 Upload started');
-  
+
   try {
     const formData = await c.req.formData();
     const file = formData.get('video');
@@ -199,7 +204,7 @@ async function transcribeJob(jobId: string) {
     job.status = 'ready';
     console.log(`[${jobId}] ✅ Ready — ${job.words.length} words`);
 
-    await Bun.file(audioPath).unlink().catch(() => {});
+    await Bun.file(audioPath).unlink().catch(() => { });
   } catch (err) {
     job.status = 'error';
     job.error = err instanceof Error ? err.message : 'Transcription failed';
