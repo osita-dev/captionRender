@@ -10,6 +10,7 @@ import type { Job, RenderRequest } from './types';
 const app = new Hono();
 
 // CORS
+app.use('/api/*', cors())
 app.use(
   '*',
   cors({
@@ -18,6 +19,7 @@ app.use(
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],
     maxAge: 600,
+    credentials: true,
   })
 )
 
