@@ -11,9 +11,9 @@ const app = new Hono();
 
 // CORS
 app.use('/*', cors({
-  origin: [
+  origin: 
     'https://captionrenderr.vercel.app',
-  ]
+  
 }));
 
 const UPLOAD_DIR = './uploads';
