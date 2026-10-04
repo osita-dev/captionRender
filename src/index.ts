@@ -307,4 +307,13 @@ app.get('/api/job/:jobId', (c) => {
 const port = Number(process.env.PORT || 3001);
 console.log(`\n🚀 Server running on port ${port}\n`);
 
+// Keep-alive: ping self every 5 minutes to prevent Render sleep
+setInterval(async () => {
+  try {
+    await fetch(`http://localhost:${port}/api/health`);
+  } catch (err) {
+    console.error('Keep-alive ping failed:', err);
+  }
+}, 5 * 60 * 1000); // 5 minutes
+
 export default { port, fetch: app.fetch };
